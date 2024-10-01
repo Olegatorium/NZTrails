@@ -55,14 +55,11 @@ namespace NZWalksAPI.Controllers
                 return BadRequest("Request data is missing.");
             }
 
-            Region region = _mapper.Map<Region>(regionAddRequest);
+            Region regionDomain = _mapper.Map<Region>(regionAddRequest);
 
-            region.Id = new Guid();
+            regionDomain = await _regionRepository.CreateAsync(regionDomain);
 
-            // Here to fix
-            await _regionRepository.CreateAsync(region);
-
-            RegionResponseDto regionResponse = _mapper.Map<RegionResponseDto>(region);
+            RegionResponseDto regionResponse = _mapper.Map<RegionResponseDto>(regionDomain);
 
             return CreatedAtAction(nameof(GetRegionById), new { regionId = regionResponse.Id }, regionResponse);
         }
@@ -70,9 +67,9 @@ namespace NZWalksAPI.Controllers
         [HttpDelete("{regionId}")]
         public async Task<IActionResult> DeleteRegion([FromRoute]Guid regionId) 
         {
-            Region? region = await _regionRepository.DeleteAsync(regionId);
+            Region? regionDomain = await _regionRepository.DeleteAsync(regionId);
 
-            if (region == null) 
+            if (regionDomain == null) 
             {
                 return NotFound();
             }
@@ -88,18 +85,16 @@ namespace NZWalksAPI.Controllers
                 return BadRequest("Request data is missing.");
             }
 
-            Region regionDomain = _mapper.Map<Region>(regionUpdateRequest);
+            Region? regionDomain = _mapper.Map<Region>(regionUpdateRequest);
 
-            regionDomain.Id = regionId;   
+            regionDomain = await _regionRepository.UpdateAsync(regionId, regionDomain);
 
-            Region? updatedRegion = await _regionRepository.UpdateAsync(regionId, regionDomain);
-
-            if (updatedRegion == null) 
+            if (regionDomain == null) 
             {
                 return NotFound();
             }
 
-            RegionResponseDto regionResponse = _mapper.Map<RegionResponseDto>(updatedRegion);
+            RegionResponseDto regionResponse = _mapper.Map<RegionResponseDto>(regionDomain);
 
             return CreatedAtAction(nameof(GetRegionById), new { regionId = regionId }, regionResponse);
         }

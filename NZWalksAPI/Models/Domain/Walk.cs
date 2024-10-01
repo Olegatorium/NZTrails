@@ -1,4 +1,6 @@
-﻿namespace NZWalksAPI.Models.Domain
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NZWalksAPI.Models.Domain
 {
     public class Walk
     {
@@ -12,7 +14,11 @@
         public Guid RegionId { get; set; }
 
         // Navigation properties
+
+        [ForeignKey("DifficultyId")]
         public Difficulty Difficulty { get; set; }
+
+        [ForeignKey("RegionId")]
         public Region Region { get; set; }
 
     }
