@@ -1,5 +1,6 @@
 ﻿using NZWalks.API.Models.DTO;
 using NZWalksAPI.Models.DTO.Region;
+using System.ComponentModel.DataAnnotations;
 
 namespace NZWalksAPI.Models.DTO.Walk
 {
@@ -11,6 +12,7 @@ namespace NZWalksAPI.Models.DTO.Walk
         public double LengthInKm { get; set; }
         public string? WalkImageUrl { get; set; }
 
+        //Navigation properties:
         public RegionResponseDto Region { get; set; }
         public DifficultyDto Difficulty { get; set; }
     }
