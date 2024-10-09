@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NZWalksAPI.Data;
 using NZWalksAPI.Models.Domain;
 using NZWalksAPI.Models.DTO.Region;
 using NZWalksAPI.Repository_contracts;
+using System.Text.Json;
 
 namespace NZWalksAPI.Controllers
 {
@@ -14,25 +16,35 @@ namespace NZWalksAPI.Controllers
     {
         private readonly IRegionRepository _regionRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger _logger;
 
-        public RegionsController(IRegionRepository regionRepository, IMapper mapper)
+        public RegionsController(IRegionRepository regionRepository, IMapper mapper,
+            ILogger<RegionsController> logger)
         {
             _regionRepository = regionRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
+        [Authorize(Roles = "Client,Admin")]
         public async Task<ActionResult<IEnumerable<RegionResponseDto>>> GetAllRegions() 
         {
+
+            _logger.LogInformation("GetAllRegions action method was invoked");
+
             List<Region> regionDomain = await _regionRepository.GetAllAsync();
 
             // Map Domain Models to DTOs
             List<RegionResponseDto> regionsDto = _mapper.Map<List<RegionResponseDto>>(regionDomain);
 
+            _logger.LogInformation($"Finished GetAllRegions request with that amount of new regions: {JsonSerializer.Serialize(regionsDto.Count)}");
+
             return Ok(regionsDto);
         }
 
         [HttpGet("{regionId}")]
+        [Authorize(Roles = "Client,Admin")]
         public async Task<ActionResult<RegionResponseDto>> GetRegionById([FromRoute] Guid regionId) 
         {
             Region? regionDomain = await _regionRepository.GetByIdAsync(regionId);
@@ -48,6 +60,7 @@ namespace NZWalksAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RegionResponseDto>> CreateRegion([FromBody]RegionAddRequestDto regionAddRequest) 
         {
             if (regionAddRequest == null)
@@ -65,6 +78,7 @@ namespace NZWalksAPI.Controllers
         }
 
         [HttpDelete("{regionId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteRegion([FromRoute]Guid regionId) 
         {
             Region? regionDomain = await _regionRepository.DeleteAsync(regionId);
@@ -78,6 +92,7 @@ namespace NZWalksAPI.Controllers
         }
 
         [HttpPut("{regionId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RegionResponseDto>> UpdateRegion([FromRoute]Guid regionId, [FromBody]RegionUpdateRequestDto regionUpdateRequest)
         {
             if (regionUpdateRequest == null)
